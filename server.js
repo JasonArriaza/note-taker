@@ -64,6 +64,37 @@ app.post('/api/notes', (req, res) => {
     });
 });
 
+// DELETE Route for deleting a note by ID
+app.delete('/api/notes/:id', (req, res) => {
+    const noteId = parseInt(req.params.id);
+
+    fs.readFile('./db/db.json', 'utf8', (err, data) => {
+        if (err) {
+            console.error(err);
+            return res.status(500).json({ error: 'Failed to read notes from the database' });
+        }
+
+        let notes = JSON.parse(data);
+
+        const noteIndex = notes.findIndex(note => note.id === noteId);
+
+        if (noteIndex === -1) {
+            return res.status(404).json({ error: 'Note not found' });
+        }
+
+        notes.splice(noteIndex, 1);
+
+        fs.writeFile('./db/db.json', JSON.stringify(notes), (err) => {
+            if (err) {
+                console.error(err);
+                return res.status(500).json({ error: 'Failed to write notes to the database' });
+            }
+            res.json({ message: 'Note deleted successfully' });
+        });
+    });
+});
+
+
 
 app.listen(PORT, () =>
   console.log(`App listening at http://localhost:${PORT}`)
