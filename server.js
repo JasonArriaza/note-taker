@@ -35,6 +35,35 @@ app.get('/api/notes', (req, res) => {
     });
 });
 
+// POST Route for adding a new note
+app.post('/api/notes', (req, res) => {
+    // Read the existing notes from the database
+    fs.readFile('./db/db.json', 'utf8', (err, data) => {
+        if (err) {
+            console.error(err);
+            return res.status(500).json({ error: 'Failed to read notes from the database' });
+        }
+
+        let notes = JSON.parse(data);
+
+        const newNote = {
+            id: notes.length + 1,
+            title: req.body.title,
+            text: req.body.text
+        };
+
+        notes.push(newNote);
+
+        fs.writeFile('./db/db.json', JSON.stringify(notes), (err) => {
+            if (err) {
+                console.error(err);
+                return res.status(500).json({ error: 'Failed to write notes to the database' });
+            }
+            res.json(newNote);
+        });
+    });
+});
+
 
 app.listen(PORT, () =>
   console.log(`App listening at http://localhost:${PORT}`)
